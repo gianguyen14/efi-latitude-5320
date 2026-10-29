@@ -96,7 +96,7 @@
 					<key>HS04</key>
 					<dict>
 						<key>UsbConnector</key>
-						<integer>255</integer>
+						<integer>3</integer>
 						<key>comment</key>
 						<string>Internal Webcam HD</string>
 						<key>port</key>
@@ -121,7 +121,7 @@
 						BQAAAA==
 						</data>
 						<key>UsbConnector</key>
-						<integer>255</integer>
+						<integer>3</integer>
 						<key>comment</key>
 						<string>Broadcom 58200 Fingerprint</string>
 						<key>usb-port-type</key>

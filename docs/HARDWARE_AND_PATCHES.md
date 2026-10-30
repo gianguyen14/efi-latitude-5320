@@ -11,12 +11,16 @@ Tài liệu này ghi lại chi tiết các giải pháp kỹ thuật, cơ chế 
 * **Vấn đề trên macOS:** Apple chuyển sang kiến trúc Apple Silicon (M1) ngay sau thế hệ Intel Ice Lake (10th Gen). Dòng Tiger Lake (11th Gen) sở hữu kiến trúc đồ họa mới (Intel Gen12 Xe LP) hoàn toàn khác biệt với Gen11 Ice Lake và không có driver gốc từ Apple trong macOS.
 * Thông thường, các laptop 11th Gen chỉ có thể boot vào macOS ở chế độ VESA (`-igfxvesa`) không có tăng tốc đồ họa (no QE/CI), dẫn đến hiện tượng giật lag, không thể chỉnh độ sáng, không hỗ trợ Metal và các ứng dụng đồ họa bị crash.
 
-### 1.2. Giải pháp: WhateverXe + AppleIntelTGLCompat
-EFI này sử dụng giải pháp đồ họa tiên tiến:
-* **Kext:** [`WhateverXe.kext`](https://github.com/b00t0x/WhateverXe) (phiên bản `v0.5.0` bởi tác giả `b00t0x`).
+### 1.2. Giải pháp: WhateverXe (Bản Tailored Custom v0.6.1) + AppleIntelTGLCompat
+EFI này sử dụng giải pháp đồ họa tiên tiến được biên dịch và tùy biến chuyên sâu:
+* **Kext:** [`WhateverXe.kext`](https://github.com/b00t0x/WhateverXe) — Được xây dựng và patch tùy chỉnh từ nhánh phát triển `v0.6.1` dành riêng cho cấu hình Dell Latitude 5320:
+  - **Khắc phục lỗi treo GPU trên Sequoia 15.8.1 (Darwin 24.6.0):** Mở rộng cơ chế `wrapTGLRecovery` (`IGAccelFIFOChannel::resetHardwareAndReplay`) sang macOS Sequoia, cho phép kernel tự động reset và tiếp tục lập lịch khi gặp lỗi batch buffer / ring hang thay vì làm đơ toàn bộ máy.
+  - **Kích hoạt `tahoeTrialScope` cho Sequoia:** Mang lại tính năng `tglSameTailRestoreEnabled` (ngăn chặn tình trạng kẹt ring khi resubmit cùng tail pointer), sửa lỗi thanh ghi GSYNC (`tglGSYNCReady` tại B0A0[2] cho stepping 1 của 0x9A49), và sửa lỗi Vol14 constant-cache invalidation.
+  - **Tối ưu hóa quản lý hàng đợi lệnh:** Kích hoạt `tglHangPreStopBridge` (`IGScheduler::haltCommandStreamer`) giúp dừng hardware command streamer an toàn, tránh văng kernel panic khi ứng dụng WebGL/Metal nặng gặp sự cố.
+  - **Tối ưu hóa Stack Kernel:** Tích hợp các commit mới nhất từ WhateverXe 0.6.1 (`2ab88c5`, `6427c3e`, `3013a1a`) giúp giải phóng và tái sử dụng bộ nhớ đệm hiển thị, loại bỏ hoàn toàn nguy cơ tràn kernel stack frame.
 * **Framework phụ trợ:** `AppleIntelTGLCompat` kết hợp cùng `AMFIPass.kext` để vượt qua cơ chế kiểm tra chữ ký mã nguồn (AMFI) của macOS Sequoia.
 * **Kết quả đạt được:**
-  - Nhận diện chính xác `Intel Iris Xe Graphics` trong System Information.
+  - Nhận diện chính xác `Intel Iris Xe Graphics` với thông số Dell Latitude 5320 trong IORegistry.
   - VRAM cấp phát động tối đa **1536 MB**.
   - Kích hoạt **Metal 2** đầy đủ, giao diện Liquid mượt mà 60 FPS.
   - Hỗ trợ màn hình trong độ phân giải Full HD (1920x1080 @ 60.00Hz ARGB8888).

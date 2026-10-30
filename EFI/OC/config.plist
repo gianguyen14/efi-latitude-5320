@@ -492,7 +492,7 @@
 				<key>Comment</key>
 				<string></string>
 				<key>Enabled</key>
-				<false/>
+				<true/>
 				<key>ExecutablePath</key>
 				<string>Contents/MacOS/AirportItlwm</string>
 				<key>MaxKernel</key>
@@ -510,7 +510,7 @@
 				<key>Comment</key>
 				<string>WIFI</string>
 				<key>Enabled</key>
-				<true/>
+				<false/>
 				<key>ExecutablePath</key>
 				<string>Contents/MacOS/itlwm</string>
 				<key>MaxKernel</key>
@@ -637,7 +637,7 @@
 				<key>Comment</key>
 				<string></string>
 				<key>Enabled</key>
-				<true/>
+				<false/>
 				<key>Identifier</key>
 				<string>com.apple.iokit.IOSkywalkFamily</string>
 				<key>MaxKernel</key>
@@ -1177,7 +1177,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>igfxonly=1 -btlfxbeta -btlfxallanyaddr ipc_control_port_options=0 -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 -wegnoegpu keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg alcid=33 -vi2c-force-polling igfxonln=1</string>
+				<string>igfxonly=1 -btlfxbeta -btlfxallanyaddr ipc_control_port_options=0 -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 -wegnoegpu keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg alcid=33 -vi2c-force-polling igfxonln=1 itlwm_he=1</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==

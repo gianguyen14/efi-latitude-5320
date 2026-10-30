@@ -151,9 +151,11 @@ Khởi động máy và nhấn liên tục phím **`F2`** để vào Dell BIOS S
 
 ## 6. Lưu Ý Hậu Cài Đặt & Quản Lý Nguồn Điện (Post-Install)
 
-### 6.1. Kết nối Mạng Wi-Fi (itlwm + HeliPort)
-* Trên macOS 15 Sequoia, kext `itlwm.kext` được lựa chọn để đảm bảo tính ổn định tối đa (tránh hiện tượng panic so với AirportItlwm).
-* Sau khi vào màn hình Desktop, hãy cài đặt ứng dụng [HeliPort](https://github.com/OpenIntelWireless/HeliPort) để chọn mạng và nhập mật khẩu Wi-Fi ngay trên thanh Menu Bar.
+### 6.1. Kết nối Mạng Wi-Fi (AirportItlwm Native — laobamac)
+* Hệ thống đã kích hoạt kext **`AirportItlwm.kext` (v2.4.0-alpha)** từ dự án [laobamac/itlwm](https://github.com/laobamac/itlwm) dành riêng cho macOS 15 Sequoia.
+* Wi-Fi hoạt động trực tiếp qua giao diện Control Center / Menu Bar gốc của macOS, hỗ trợ quét sóng, lưu mật khẩu vào iCloud Keychain và cung cấp dịch vụ định vị (Location Services) cho Apple Maps / Find My.
+* Tích hợp boot-arg **`itlwm_he=1`** để mở khóa chuẩn Wi-Fi 6 (802.11ax / High Efficiency) trên card Intel AX201.
+* *Lưu ý:* Không cần chạy ứng dụng HeliPort.
 
 ### 6.2. Thiết lập Display Sleep chống treo máy
 Do driver đồ họa Intel Iris Xe trên Tiger Lake chưa có vi mã gốc từ Apple, quá trình ngủ sâu S3 đôi khi gặp hiện tượng chậm phản hồi (framebuffer slow ack). Để đảm bảo máy sử dụng ổn định không lo đơ cứng:

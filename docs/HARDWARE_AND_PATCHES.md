@@ -100,8 +100,10 @@ EFI này sử dụng giải pháp đồ họa tiên tiến:
 
 * **Card mạng:** Intel Wi-Fi 6 AX201 (giao tiếp CNVi qua chipset Tiger Lake).
 * **Wi-Fi:**
-  - Sử dụng `itlwm.kext` kết hợp cùng ứng dụng [HeliPort](https://github.com/OpenIntelWireless/HeliPort).
-  - *Ghi chú:* Trên macOS 15 Sequoia, Apple đã tái cấu trúc hoàn toàn hệ thống kext Airport khiến `AirportItlwm` dễ gây lỗi kết nối hoặc panic. `itlwm` hoạt động như một card mạng Ethernet ảo (`en0`), mang lại độ ổn định tuyệt đối, tốc độ cao và không phụ thuộc vào private framework của Apple.
+  - Sử dụng `AirportItlwm.kext` (v2.4.0-alpha từ nhánh `laobamac/itlwm` tối ưu cho macOS 15 Sequoia Darwin 24.x).
+  - Hoạt động trực tiếp qua menu Wi-Fi và Control Center gốc của macOS (không cần app HeliPort).
+  - Hỗ trợ đầy đủ dịch vụ định vị Location Services (Apple Maps / Find My).
+  - Bổ sung boot-arg `itlwm_he=1` để kích hoạt giao thức truyền dữ liệu Wi-Fi 6 (802.11ax).
 * **Bluetooth:**
   - Giao tiếp qua cổng USB nội bộ (`HS10` hoặc `HS06`).
   - Sử dụng bộ 3 kext: `IntelBluetoothFirmware.kext` + `IntelBTPatcher.kext` + `BlueToolFixup.kext`.
@@ -131,7 +133,7 @@ Toàn bộ hệ thống cổng USB được ánh xạ chuẩn xác qua `USBMap.k
 Dưới đây là bảng giải trình kỹ thuật cho chuỗi boot-args đang sử dụng trong EFI:
 
 ```text
-igfxonly=1 -btlfxbeta -btlfxallanyaddr ipc_control_port_options=0 -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 -wegnoegpu keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg alcid=33 -vi2c-force-polling igfxonln=1
+igfxonly=1 -btlfxbeta -btlfxallanyaddr ipc_control_port_options=0 -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 -wegnoegpu keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg alcid=33 -vi2c-force-polling igfxonln=1 itlwm_he=1
 ```
 
 | STT | Boot-arg | Mục đích kỹ thuật |
@@ -151,3 +153,4 @@ igfxonly=1 -btlfxbeta -btlfxallanyaddr ipc_control_port_options=0 -amfi_get_out_
 | 13 | `alcid=33` | Layout ID cho chip âm thanh Realtek ALC3254 / ALC236 của Dell Latitude 5320. |
 | 14 | `-vi2c-force-polling` | Ép driver touchpad VoodooI2C hoạt động ở chế độ Polling, đảm bảo mượt mà tuyệt đối trên Dell. |
 | 15 | `igfxonln=1` | Giữ màn hình iGPU luôn ở trạng thái online, ngăn hiện tượng đen màn hình khi thức dậy. |
+| 16 | `itlwm_he=1` | Mở khóa chuẩn Wi-Fi 6 (802.11ax / High Efficiency) cho card Intel AX201 trong AirportItlwm. |

@@ -564,7 +564,7 @@
 				<key>Comment</key>
 				<string>mic/cam/btooth</string>
 				<key>Enabled</key>
-				<true/>
+				<false/>
 				<key>ExecutablePath</key>
 				<string></string>
 				<key>MaxKernel</key>

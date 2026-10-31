@@ -130,7 +130,9 @@
 					<key>HS06</key>
 					<dict>
 						<key>UsbConnector</key>
-						<integer>3</integer>
+						<integer>255</integer>
+						<key>comment</key>
+						<string>Intel AX201 Bluetooth</string>
 						<key>port</key>
 						<data>
 						BgAAAA==
@@ -140,7 +142,7 @@
 						BgAAAA==
 						</data>
 						<key>usb-port-type</key>
-						<integer>3</integer>
+						<integer>255</integer>
 					</dict>
 					<key>HS07</key>
 					<dict>

@@ -38,6 +38,14 @@
 				<key>Path</key>
 				<string>SSDT-PLUG-ALT.aml</string>
 			</dict>
+			<dict>
+				<key>Comment</key>
+				<string>Fake ambient light sensor for CoreBrightness</string>
+				<key>Enabled</key>
+				<true/>
+				<key>Path</key>
+				<string>SSDT-ALS0.aml</string>
+			</dict>
 		</array>
 		<key>Delete</key>
 		<array/>

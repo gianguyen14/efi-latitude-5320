@@ -618,13 +618,13 @@
 				<key>Arch</key>
 				<string>Any</string>
 				<key>BundlePath</key>
-				<string>BlueToolFixup.kext</string>
+				<string>IntelBluetoothFirmware.kext</string>
 				<key>Comment</key>
-				<string>Bluetooth Fixup</string>
+				<string>Bluetooth Firmware</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
-				<string>Contents/MacOS/BlueToolFixup</string>
+				<string>Contents/MacOS/IntelBluetoothFirmware</string>
 				<key>MaxKernel</key>
 				<string></string>
 				<key>MinKernel</key>
@@ -640,7 +640,7 @@
 				<key>Comment</key>
 				<string>Bluetooth Patcher</string>
 				<key>Enabled</key>
-				<false/>
+				<true/>
 				<key>ExecutablePath</key>
 				<string>Contents/MacOS/IntelBTPatcher</string>
 				<key>MaxKernel</key>
@@ -654,13 +654,13 @@
 				<key>Arch</key>
 				<string>Any</string>
 				<key>BundlePath</key>
-				<string>IntelBluetoothFirmware.kext</string>
+				<string>BlueToolFixup.kext</string>
 				<key>Comment</key>
-				<string>Bluetooth Firmware</string>
+				<string>Bluetooth Fixup</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
-				<string>Contents/MacOS/IntelBluetoothFirmware</string>
+				<string>Contents/MacOS/BlueToolFixup</string>
 				<key>MaxKernel</key>
 				<string></string>
 				<key>MinKernel</key>
@@ -1217,7 +1217,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-btlfxbeta -btlfxallanyaddr -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg -vi2c-force-polling itlwm_he=1</string>
+				<string>-btlfxbeta -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg -vi2c-force-polling itlwm_he=1</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==

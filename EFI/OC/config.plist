@@ -18,7 +18,7 @@
 				<key>Comment</key>
 				<string></string>
 				<key>Enabled</key>
-				<false/>
+				<true/>
 				<key>Path</key>
 				<string>SSDT-PNLF.aml</string>
 			</dict>
@@ -116,7 +116,32 @@
 	<key>DeviceProperties</key>
 	<dict>
 		<key>Add</key>
-		<dict/>
+		<dict>
+			<key>PciRoot(0x0)/Pci(0x1F,0x3)</key>
+			<dict>
+				<key>device_type</key>
+				<string>Audio device</string>
+				<key>hda-gfx</key>
+				<string>onboard-1</string>
+				<key>layout-id</key>
+				<data>
+				IQAAAA==
+				</data>
+				<key>model</key>
+				<string>Realtek ALC236 High-Definition Audio</string>
+			</dict>
+			<key>PciRoot(0x0)/Pci(0x2,0x0)</key>
+			<dict>
+				<key>AAPL,slot-name</key>
+				<string>Internal@0,2,0</string>
+				<key>device_type</key>
+				<string>VGA compatible controller</string>
+				<key>hda-gfx</key>
+				<string>onboard-1</string>
+				<key>model</key>
+				<string>Intel Iris Xe Graphics</string>
+			</dict>
+		</dict>
 		<key>Delete</key>
 		<dict/>
 	</dict>
@@ -1177,7 +1202,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>igfxonly=1 -btlfxbeta -btlfxallanyaddr ipc_control_port_options=0 -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 -wegnoegpu keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg alcid=33 -vi2c-force-polling igfxonln=1 itlwm_he=1</string>
+				<string>-btlfxbeta -btlfxallanyaddr -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg -vi2c-force-polling itlwm_he=1</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==
@@ -1215,7 +1240,7 @@
 		<key>Generic</key>
 		<dict>
 			<key>AdviseFeatures</key>
-			<false/>
+			<true/>
 			<key>MLB</key>
 			<string>C02XXXXXXXXXXXXXX</string>
 			<key>MaxBIOSVersion</key>

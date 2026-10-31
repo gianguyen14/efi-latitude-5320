@@ -63,6 +63,13 @@ flowchart LR
 ### 2.4. Quản Lý Nguồn CPU Tiger Lake Tối Ưu (HWP Speed Shift)
 * Kết hợp `CPUFriend.kext` và bảng dữ liệu tùy chỉnh `CPUFriendDataProvider.kext`, thiết lập xung sàn 1.0 GHz và trần 4.4 GHz. Quản lý năng lượng tự động thích ứng giúp máy mát mẻ khi làm việc nhẹ và bung hết hiệu năng khi xử lý tác vụ nặng.
 
+### 2.5. Bluetooth không tự tắt (`btpin`)
+* **Vấn đề:** `BlueToolFixup` vá `/usr/sbin/bluetoothd` ngay trong bộ nhớ đệm file. File này được nén theo khối 16 KB trên phân vùng hệ thống đã niêm phong. Khi một phần khối bị đẩy ra khỏi RAM rồi nạp lại, APFS kiểm tra cả khối cùng trang đã vá, báo `Data hash mismatch`, và `bluetoothd` chết với `SIGBUS KERN_MEMORY_ERROR` khiến Bluetooth tự tắt.
+* **Giải pháp:** [`PostInstall/Tools/btpin.c`](PostInstall/Tools/btpin.c) tìm các khối chứa chỗ vá và khóa chúng trong RAM (`mlock`, khoảng 64 KB), để chúng không bao giờ bị nạp lại. Cài một lần sau khi cài macOS:
+  ```bash
+  sudo sh PostInstall/Tools/install_btpin.sh
+  ```
+
 ---
 
 ## 3. Cấu Trúc Thư Mục EFI Chuẩn

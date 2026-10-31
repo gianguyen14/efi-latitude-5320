@@ -142,6 +142,13 @@
 			<dict>
 				<key>AAPL,slot-name</key>
 				<string>Internal@0,2,0</string>
+				<key>AAPL00,override-no-connect</key>
+				<data>
+				AP///////wAGr5ESAAAAAAAeAQSVHRF4ApMFklhZkCkd
+				UFQAAAABAQEBAQEBAQEBAQEBAQEBADeAoHA4MEAQED4A
+				JaUQAAAaACyAoHA4MEAQED4AJaUQAAAaAAAA/gBKTTdU
+				MoBCMTMzSEFOAAAAAAABQSOZABAAAAoBCiAgAI0=
+				</data>
 				<key>device_type</key>
 				<string>VGA compatible controller</string>
 				<key>hda-gfx</key>

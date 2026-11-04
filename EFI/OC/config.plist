@@ -46,6 +46,14 @@
 				<key>Path</key>
 				<string>SSDT-ALS0.aml</string>
 			</dict>
+			<dict>
+				<key>Comment</key>
+				<string>Declare S3 so macOS allows sleep; used for hibernatemode 25 (S4)</string>
+				<key>Enabled</key>
+				<true/>
+				<key>Path</key>
+				<string>SSDT-S3.aml</string>
+			</dict>
 		</array>
 		<key>Delete</key>
 		<array/>

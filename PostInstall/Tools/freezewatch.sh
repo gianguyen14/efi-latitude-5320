@@ -42,7 +42,8 @@ sample() {
   sensors=$([ -x "$smc" ] && "$smc")
   temp=$(printf '%s' "$sensors" | sed -nE 's/.*TC0P\(sp78\)=([0-9.]+).*/\1/p')
   watts=$(printf '%s' "$sensors" | sed -nE 's/.*PCTR\(sp96\)=([0-9.]+).*/\1/p')
-  append "$(date +%T) up=$((now - boot)) comp=${pct}% ${gib}GiB swap=${swap}MB level=$level load=$load gpu_recov=${recoveries:-?} temp=${temp:-?} pkg=${watts:-?}W front=$front apps=$apps"
+  fan=$(printf '%s' "$sensors" | sed -nE 's/.*F0Ac\([a-z0-9 ]+\)=([0-9]+).*/\1/p')
+  append "$(date +%T) up=$((now - boot)) comp=${pct}% ${gib}GiB swap=${swap}MB level=$level load=$load gpu_recov=${recoveries:-?} temp=${temp:-?} pkg=${watts:-?}W fan=${fan:-?} front=$front apps=$apps"
 }
 
 alert() {

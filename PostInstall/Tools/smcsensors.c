@@ -1,4 +1,4 @@
-// SMC sensor check: CPU temperatures (sp78), package power (sp96 = raw/64 W) and fan speed (F0Ac/F1Ac, RPM).
+// SMC sensor check: CPU temperatures (sp78) and package power (sp96 = raw/64 W).
 // Build: clang -O1 smcsensors.c -o smcsensors -framework IOKit
 #include <IOKit/IOKitLib.h>
 #include <stdio.h>
@@ -19,9 +19,8 @@ static double rd(const char*key,char*type){D in={0},out={0};in.key=k4(key);in.da
  if(!strcmp(type,"ui8 "))return out.bytes[0];
  if(!strcmp(type,"ui16"))return (out.bytes[0]<<8)|out.bytes[1];
  if(!strcmp(type,"sp96"))return ((int16_t)((out.bytes[0]<<8)|out.bytes[1]))/64.0;
- if(!strcmp(type,"fpe2"))return ((out.bytes[0]<<8)|out.bytes[1])/4.0;
  return -2;}
 int main(int ac,char**av){io_service_t s=IOServiceGetMatchingService(kIOMainPortDefault,IOServiceMatching("AppleSMC"));
  if(!s||IOServiceOpen(s,mach_task_self(),0,&c)){puts("no smc");return 1;}
- const char*keys[]={"TC0P","TC0D","TC0E","TC0F","TCXC","TC1C","TC2C","PC0C","PCPC","PCPG","PCTR","PC0R","F0Ac","F1Ac"};
- for(int i=0;i<14;i++){char t[5]="";double v=rd(keys[i],t);if(v>-1)printf("%s(%s)=%.1f ",keys[i],t,v);}puts("");}
+ const char*keys[]={"TC0P","TC0D","TC0E","TC0F","TCXC","TC1C","TC2C","PC0C","PCPC","PCPG","PCTR","PC0R"};
+ for(int i=0;i<12;i++){char t[5]="";double v=rd(keys[i],t);if(v>-1)printf("%s(%s)=%.1f ",keys[i],t,v);}puts("");}

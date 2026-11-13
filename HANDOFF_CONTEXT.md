@@ -90,6 +90,8 @@ Snapshot: 2026-11-02. Language with the user: Vietnamese. The user runs every su
 - PC711Probe.kext is the SSD's interrupt compatibility driver (stationk9), not a debug probe. Do not remove it.
 - At load < 2.5 the package still averages 7.2 W and 61 C (freezewatch, 383 samples). Needs `sudo powermetrics` from the user to see what keeps it awake.
 
+- 2026-11-13: Chrome hardware acceleration enabled (chrome://gpu: Canvas/Compositing/WebGL/WebGPU hardware, GPU crash count 0); no crash or GPU event in the first 15 minutes. Claude.app: `Contents/MacOS/Claude` was a 27 KB launcher that exec'd Claude.real with `--disable-gpu --disable-software-rasterizer`; replaced by a copy of Claude.real, re-signed ad hoc. Undo: `cp ~/claude-wrapper-backup/Claude /Applications/Claude.app/Contents/MacOS/Claude && codesign -f -s - /Applications/Claude.app`. Fallback if the window is blank: `/Applications/Claude.app/Contents/MacOS/Claude.real --disable-gpu`.
+
 ## Next steps
 
 1. In WhateverXe, run `python3 tools/test.py` and confirm 208/208. Then commit.

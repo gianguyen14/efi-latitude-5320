@@ -106,6 +106,14 @@ Snapshot: 2026-11-02. Language with the user: Vietnamese. The user runs every su
 - Our `TGL engine reset` SYSLOG lines are not in the unified log, so the per-reset result (result, replay) was not visible. Boot with `-wexdiag` and read `TGLRecoveryLive` to see it.
 - Workaround for now: no camera or video calls with Chrome hardware acceleration on (turn off "Use graphics acceleration when available" for calls).
 
+### S0ixStandby trial (prepared 2026-11-14, not booted)
+
+- Idea: macOS never asks for S3; it sleeps in Deep Idle (S0) and the kext calls the firmware's Modern Standby `_DSM`. Project: labrouss/S0ixStandby 0.5.4 (commit 28069d3), already used on an HP EliteBook 840 G8 (Tiger Lake, WhateverXe): about 0.5-1 W asleep, power button wakes, known freeze on AC after dark wakes (`-s0ixacnortc`), lid wake not working on that HP.
+- From the ACPI dump (`~/Desktop/ACPI .zip`, decoded with `~/CPUFriendFriend/Scripts/iasl-stable`): firmware has `SS3 = 0`, `SS4 = 1` (no S3, S4 on); our `SSDT-S3.aml` creates a fake `\_S3` ({5,5,0,0}) that makes macOS send a real S3 request; `\_SB.PEPD` (`INT33A1`, `_CID PNP0D80`) holds the Modern Standby `_DSM` (functions 3 display off, 4 display on, 5 entry, 6 exit, all gated by `S0ID == 1`, GNVS at 0x63D2C000); `PEPD._STA` needs OSYS >= 0x07DF so macOS (which does not answer "Windows 2015") does not see it; `LID0` has `_PRW`.
+- Trial tree: `~/s0ix-trial` (README.md there). `EFI/OC` = booted EFI + SSDT-S3 disabled, SSDT-DEEPIDLE, SSDT-PEPD-STA (+ OpenCore patch renaming `PEPD._STA` to `XSTA`, unique 14-byte AML match), S0ixStandby.kext, boot-args `-s0ixdbg -s0ixacnortc`. CPUID stays Coffee Lake (`0906EA`); `config-icelake-variant.plist` is step 2. Repo `EFI/` untouched.
+- Checked offline: kext imports 338 symbols, none unresolved against kernel + kernel collection (`nm -gU` of both); SSDTs compile clean; DSDT with the rename decodes with `XSTA` inside `Device (PEPD)`; kext source read (no network, no files, no panic; MSR reads only; PCI D3 only for driverless endpoints and only with `-s0ixd3`; GPU full reset at wake like i915).
+- Unknown until run: `S0ID` value, whether macOS picks Deep Idle, clean wake, lid wake.
+
 ## Next steps
 
 1. In WhateverXe, run `python3 tools/test.py` and confirm 208/208. Then commit.

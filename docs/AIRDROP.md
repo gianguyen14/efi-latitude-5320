@@ -8,7 +8,7 @@
 | Card Wi-Fi | Intel AX201, `8086:a0f0` |
 | Driver | **ForbiddenItlwm 0.5.4-beta.2** (bản Sequoia), thay `AirportItlwm.kext` |
 | iPhone SE 2 (iOS mới) | AirDrop hoạt động |
-| iPhone 7 (iOS cũ) | **Chưa nhận được**: Mac thấy tín hiệu Bluetooth nhưng `sharingd` không bật quảng bá AirDrop qua AWDL |
+| iPhone 7 (iOS 15.8.7) | Mac → iPhone 7 chạy (TCP cổng 8770). iPhone 7 → Mac **chạy sau khi khởi động lại `sharingd` và `rapportd`** (xem mục 5); trước đó Mac thấy tín hiệu Bluetooth nhưng `sharingd` không bật quảng bá AirDrop qua AWDL |
 | Giao diện | `awdl0` lên, có IPv6; ping qua `awdl0` 0% mất gói |
 | Wi-Fi thường | Vẫn kết nối (kênh 36), AWDL dùng kênh 149 |
 
@@ -61,4 +61,5 @@ Kết quả mong đợi: `BuildCheck` là `verified`, `Added` là `Yes`, `Channe
 * Trước khi cập nhật macOS: boot một lần không có `-btleadv` (hoặc tắt BTLEAdvFixup), cập nhật, rồi kiểm tra bản mới có được hỗ trợ.
 * Wi-Fi thường chậm đi khoảng 30–45% khi AirDrop đang lắng nghe vì dùng chung một radio (theo ghi nhận của dự án gốc).
 * Một lần truyền từ thiết bị khác từng kẹt ở 0 byte; dự án gốc có ghi nhận lỗi tương tự ("kẹt ở Waiting").
+* **Nếu AirDrop từ iPhone sang Mac kẹt ở "Đang chờ"** (Mac thấy tín hiệu Bluetooth nhưng không trả lời mDNS `_airdrop._tcp` trên `awdl0`): khởi động lại hai tiến trình người dùng bằng `killall sharingd rapportd` (launchd tự bật lại), đặt iPhone nhận "Mọi người", rồi gửi lại. Cách này đã khắc phục iPhone 7 → Mac trên máy này (sau khi `wifip2pd` đã được bật). Chưa rõ vì sao `sharingd` rơi vào trạng thái không phản hồi sau khi boot, nên có thể phải lặp lại sau mỗi lần khởi động.
 * Đường lui: bật lại `AirportItlwm.kext`, tắt `ForbiddenItlwm.kext` và `BTLEAdvFixup.kext`, bật lại `IntelBTPatcher.kext`, rồi bỏ các cờ `-itlawdl*` và `-btleadv` khỏi boot-args.

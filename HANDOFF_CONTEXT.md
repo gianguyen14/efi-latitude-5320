@@ -92,6 +92,15 @@ Snapshot: 2026-11-02. Language with the user: Vietnamese. The user runs every su
 
 - 2026-11-13: Chrome hardware acceleration enabled (chrome://gpu: Canvas/Compositing/WebGL/WebGPU hardware, GPU crash count 0); no crash or GPU event in the first 15 minutes. Claude.app: `Contents/MacOS/Claude` was a 27 KB launcher that exec'd Claude.real with `--disable-gpu --disable-software-rasterizer`; replaced by a copy of Claude.real, re-signed ad hoc. Undo: `cp ~/claude-wrapper-backup/Claude /Applications/Claude.app/Contents/MacOS/Claude && codesign -f -s - /Applications/Claude.app`. Fallback if the window is blank: `/Applications/Claude.app/Contents/MacOS/Claude.real --disable-gpu`.
 
+### Camera / video call GPU reset storm (2026-11-14, still open)
+
+- Boot at 15:40 with `-wexteardownfix` (kext 13C39D03, no nullguard). At 15:46:05, after opening Chrome and using the camera or a video call, 15 `gpuRestart` reports followed within about 4.5 minutes (one every ~10 s, all `WindowServer`, hardware context 6). The last was at 15:50:39; the user then rebooted, so the storm was not shown to end by itself or by closing the camera app.
+- First hang: RCS "busy, in a batch buffer", IPEHR 0x7a000204 (PIPE_CONTROL, the same post-sync write family as b00t0x/WhateverXe#62). After that every report is RCS waiting on `MI_SEMAPHORE_WAIT` (IPEHR 0x0e009002) and/or BCS with RING_CTL 0x7000 (not enabled) and HEAD != TAIL: the blitter has queued work but is never restarted, so the semaphores never signal and each reset hangs again.
+- `TGLTeardownDrainLive` at 15:48 was [62, 10 frees, 0 waits, 0, 8 task frees, 4 waits, 4 drained]: the drain ran and finished every wait inside 50 ms, so `-wexteardownfix` is not enough on its own.
+- `-wex-tgl-gpurec` from SaqibAlMalik/WhateverXe (tgl-stability-0.8.2) skips BCS (`domain & 2`), so it would not restart the blitter either; it restores the RCS/CCS pair after a render-domain reset. Not ported.
+- Our `TGL engine reset` SYSLOG lines are not in the unified log, so the per-reset result (result, replay) was not visible. Boot with `-wexdiag` and read `TGLRecoveryLive` to see it.
+- Workaround for now: no camera or video calls with Chrome hardware acceleration on (turn off "Use graphics acceleration when available" for calls).
+
 ## Next steps
 
 1. In WhateverXe, run `python3 tools/test.py` and confirm 208/208. Then commit.

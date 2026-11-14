@@ -191,6 +191,7 @@ sudo pmset -a tcpkeepalive 0
 * ⚡ [**SLEEP_AND_POWER_MANAGEMENT.md**](docs/SLEEP_AND_POWER_MANAGEMENT.md): Chi tiết cơ chế sleep, nguyên nhân deadlock và cẩm nang cấu hình pmset.
 * 🛠️ [**BIOS_CONFIGURATION.md**](docs/BIOS_CONFIGURATION.md): Hướng dẫn từng bước thiết lập Dell BIOS Setup (v1.52.0+).
 * 📝 [**WALKTHROUGH.md**](docs/WALKTHROUGH.md): Nhật ký kiểm định các layout âm thanh AppleALC (`alcid=33`).
+* 📡 [**AIRDROP.md**](docs/AIRDROP.md): AirDrop (AWDL) trên Intel AX201 bằng ForbiddenItlwm, cấu hình, bước bật `wifip2pd` và giới hạn đã biết.
 
 ---
 

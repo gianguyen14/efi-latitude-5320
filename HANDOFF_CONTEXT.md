@@ -150,7 +150,7 @@ Snapshot: 2026-11-02. Language with the user: Vietnamese. The user runs every su
 
 - The App Store hang during startup comes from CPU load right after boot. It is not a bug.
 - GPU performance is limited by firmware PL1 (about 12 W). Remaining lever: BIOS Thermal Mode → Ultra Performance.
-- AirDrop and iPhone Mirroring are not possible on this hardware (the AX201 has no AWDL, and there is no T2).
+- AirDrop now works (2026-11-15): ForbiddenItlwm 0.5.4-beta.2 adds AWDL for the AX201, see `docs/AIRDROP.md`. iPhone Mirroring is still not possible (no T2). AirPlay mirroring from an iPhone to the Mac crashed WindowServer on 2026-11-15 01:50 in `AppleGVACore` (`__assert_rtn` under `AVFPixelProcessCore_PrepareToTransferImages` from `WS::GVAInstance::transfer_image_async`): the same GVA pixel-transfer path as the VA driver crash above. Not caused by the Wi-Fi change.
 - PerfLimitProbe (MSR reads) panicked at boot and was rolled back. Do not reintroduce it.
 
 ## Performance findings (2026-11-06, uptime ~1 h, on AC)

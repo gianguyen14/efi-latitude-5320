@@ -8,6 +8,8 @@ clang -arch x86_64 -dynamiclib -O1 -framework VideoToolbox -framework CoreMedia 
 codesign -f -s - "$D/vtbgra.dylib"
 install -m 755 airplayfix.sh "$D/airplayfix.sh"
 sed "s#__SCRIPT__#$D/airplayfix.sh#" com.gianguyen14.airplayfix.plist > "$HOME/Library/LaunchAgents/com.gianguyen14.airplayfix.plist"
+# VideoToolbox converts the decoded frames with the GPU (GVA) unless this is off; that hangs the GPU on Tiger Lake.
+defaults write -g enableGVATransfer -bool NO
 launchctl bootout "gui/$(id -u)/com.gianguyen14.airplayfix" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.gianguyen14.airplayfix.plist"
 echo "Installed. ControlCenter restarts now; turn AirPlay mirroring off and on again."

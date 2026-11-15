@@ -72,7 +72,7 @@ flowchart LR
 
 ### 2.6. AirPlay phản chiếu iPhone sang Mac bị đen (`airplayfix`)
 * **Vấn đề:** bộ thu AirPlay giải mã video ra định dạng 420v, WindowServer phải đổi sang BGRA bằng GVA nhưng driver Intel Tiger Lake không làm được, nên hình đen (chỉ hiện khi có lớp khác như nút X cùng được composite). Phản chiếu vẫn kết nối bình thường, chỉ thiếu hình.
-* **Giải pháp:** [`PostInstall/Tools/airplayfix/`](PostInstall/Tools/airplayfix/) biên dịch một thư viện nhỏ ép bộ thu (chạy trong ControlCenter) xuất BGRA, rồi cài LaunchAgent tự áp dụng mỗi lần đăng nhập. Cần boot-arg `amfi_get_out_of_my_way` (đã có trong EFI này). Cài một lần sau khi cài macOS, **không dùng sudo**:
+* **Giải pháp:** [`PostInstall/Tools/airplayfix/`](PostInstall/Tools/airplayfix/) biên dịch một thư viện nhỏ ép bộ thu (chạy trong ControlCenter) xuất BGRA, đặt `enableGVATransfer=NO` để VideoToolbox đổi định dạng bằng CPU (đổi bằng GPU làm treo GPU), rồi cài LaunchAgent tự áp dụng mỗi lần đăng nhập. Cần boot-arg `amfi_get_out_of_my_way` (đã có trong EFI này). Cài một lần sau khi cài macOS, **không dùng sudo**:
   ```bash
   sh PostInstall/Tools/airplayfix/install_airplayfix.sh
   ```

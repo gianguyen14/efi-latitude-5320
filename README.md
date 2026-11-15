@@ -78,6 +78,10 @@ flowchart LR
   ```
   Gỡ bỏ: `sh PostInstall/Tools/airplayfix/uninstall_airplayfix.sh`. Không cài thì EFI vẫn chạy bình thường, chỉ AirPlay mirroring bị đen.
 
+### 2.7. Hạn chế đã biết: iPhone Mirroring (app "iPhone Mirroring") không dùng được
+* Máy báo "Không thể kết nối với iPhone" sau khi nhập passcode. `bluetoothd` thử kết nối Bluetooth LE tới iPhone nhưng controller AX201 không bao giờ nối được tới thiết bị Apple (kết nối tới tai nghe BLE thường vẫn bình thường). Đã thử tắt `BTLEAdvFixup` và để iPhone sáng màn hình, kết quả không đổi. Tính năng này chính thức chỉ dành cho Mac Apple Silicon hoặc Intel có T2, nên coi là không hỗ trợ.
+* Phản chiếu màn hình iPhone lên Mac bằng AirPlay thì dùng được (xem mục 2.6).
+
 ---
 
 ## 3. Cấu Trúc Thư Mục EFI Chuẩn

@@ -82,12 +82,18 @@ flowchart LR
 * Máy báo "Không thể kết nối với iPhone" sau khi nhập passcode. `bluetoothd` thử kết nối Bluetooth LE tới iPhone nhưng controller AX201 không bao giờ nối được tới thiết bị Apple (kết nối tới tai nghe BLE thường vẫn bình thường). Đã thử tắt `BTLEAdvFixup` và để iPhone sáng màn hình, kết quả không đổi. Tính năng này chính thức chỉ dành cho Mac Apple Silicon hoặc Intel có T2, nên coi là không hỗ trợ.
 * Phản chiếu màn hình iPhone lên Mac bằng AirPlay thì dùng được (xem mục 2.6).
 
-### 2.8. CPU bị kẹp xuống 360 MHz từng đợt (tùy chọn: `SSDT-PL1`)
+### 2.8. CPU bị kẹp xuống 360 MHz từng đợt (`SSDT-PL1`, đã bật sẵn)
 * Triệu chứng: dưới tải kéo dài, `powermetrics` báo `CPU LIMIT PL1`; xung tụt về khoảng 360 MHz trong 20–30 giây rồi hồi lại, lặp lại khoảng 90 giây một lần. Nhiệt lúc đó chỉ khoảng 50 °C, nên đây là giới hạn công suất PL1 của firmware (khoảng 12.5 W), không phải nhiệt.
-* Cách sửa (tùy chọn): `PostInstall/Tools/pl1/SSDT-PL1.aml` (mã nguồn `SSDT-PL1.dsl`) ghi PACKAGE_RAPL_LIMIT qua MCHBAR một lần lúc khởi động: PL1 = 18 W, PL2 = 28 W. Chỉ nâng, không bao giờ hạ, và bỏ qua nếu BIOS đã khóa thanh ghi (bit 63) hoặc vùng MMIO không hợp lệ. 18 W là mức Notebookcheck đo duy trì được trên cùng khung máy ở chế độ Ultra Performance của Windows.
-* Cài: chép `SSDT-PL1.aml` vào `EFI/OC/ACPI/` và thêm vào `ACPI > Add` trong `config.plist`. Gỡ: bỏ dòng đó.
+* Cách sửa: `EFI/OC/ACPI/SSDT-PL1.aml` (bản sao ở `PostInstall/Tools/pl1/SSDT-PL1.aml`) (mã nguồn `SSDT-PL1.dsl`) ghi PACKAGE_RAPL_LIMIT qua MCHBAR một lần lúc khởi động: PL1 = 18 W, PL2 = 28 W. Chỉ nâng, không bao giờ hạ, và bỏ qua nếu BIOS đã khóa thanh ghi (bit 63) hoặc vùng MMIO không hợp lệ. 18 W là mức Notebookcheck đo duy trì được trên cùng khung máy ở chế độ Ultra Performance của Windows.
+* Đã nằm trong `EFI/OC/ACPI/` và bật trong `ACPI > Add` của `config.plist`. Muốn tắt: đặt `Enabled` của `SSDT-PL1.aml` về `false`. Muốn đổi mức công suất: sửa `PL1W` / `PL2W` trong `SSDT-PL1.dsl` rồi biên dịch lại bằng `iasl`.
 * Kết quả đo trên máy này (5 phút dùng bình thường, cùng cấu hình, chỉ khác SSDT): thời gian bị kẹp dưới 1.5 GHz giảm từ 31% xuống 8%, công suất gói duy trì khoảng 18 W, nhiệt giữ ổn định khoảng 78 °C. Burst PL2 có thể chạm 100 °C trong khoảng 15 giây.
-* Hạn chế: vẫn còn thỉnh thoảng một đợt kẹp khoảng 20 giây ở khoảng 6 W / 50 °C với PL1 đang là 18 W, nên không phải do SSDT này; chưa rõ nguyên nhân (nghi giới hạn nền tảng của EC). Nhiệt và quạt cao hơn khi giữ 18 W. Đây là tùy chọn, không có trong cây `EFI/` mặc định.
+* Hạn chế: vẫn còn thỉnh thoảng một đợt kẹp khoảng 20 giây ở khoảng 6 W / 50 °C với PL1 đang là 18 W, nên không phải do SSDT này; chưa rõ nguyên nhân (nghi giới hạn nền tảng của EC). Nhiệt và quạt cao hơn khi giữ 18 W.
+
+### 2.9. Sleep bằng Deep Idle (`S0ixStandby.kext`)
+* Firmware của máy chỉ có Modern Standby (`SS3 = 0`), không có S3; S3 giả bằng `SSDT-S3` chỉ cho màn hình đen và hibernation S4 không resume được. Cấu hình hiện tại thay bằng Deep Idle: macOS ngủ ở S0, và `S0ixStandby.kext` (labrouss/S0ixStandby 0.5.4, BSD-3, dựng từ mã nguồn) gọi `_DSM` Modern Standby của firmware.
+* Gồm: `S0ixStandby.kext`, `SSDT-DEEPIDLE.aml`, `SSDT-PEPD-STA.aml` (cho `\_SB.PEPD` hiện ra với macOS) cùng bản vá OpenCore đổi tên `PEPD._STA` thành `XSTA`; `SSDT-S3.aml` được tắt; `Cpuid1Data` giả Ice Lake (`E5060700`); boot-args `-s0ixdbg -s0ixacnortc`. Mã nguồn SSDT ở `PostInstall/Tools/s0ix/`.
+* Kiểm tra: không có thành phần nào ở đây gây tụt xung. Cú kẹp ở mục 2.8 là giới hạn công suất, có trước khi bật Deep Idle và đo được nguyên như vậy trên cả hai cấu hình.
+* Chi tiết quá trình thử và các hạn chế đã ghi nhận lúc đó nằm trong `HANDOFF_CONTEXT.md` (mục S0ixStandby).
 
 ---
 
@@ -99,7 +105,10 @@ EFI/
 │   └── BOOTx64.efi
 └── OC/
     ├── ACPI/
-    │   └── SSDT-EC-USBX-LAPTOP.aml          # Tạo thiết bị giả lập EC & cấp nguồn USB
+    │   ├── SSDT-EC-USBX-LAPTOP.aml          # Tạo thiết bị giả lập EC & cấp nguồn USB
+    │   ├── SSDT-DEEPIDLE.aml                # Khai báo Deep Idle cho S0ixStandby
+    │   ├── SSDT-PEPD-STA.aml                # Cho thiết bị PEPD (Modern Standby) hiện với macOS
+    │   └── SSDT-PL1.aml                     # Nâng PL1/PL2 của gói CPU lúc khởi động (mục 2.8)
     ├── Drivers/
     │   ├── HfsPlus.efi                      # Driver đọc phân vùng macOS HFS+
     │   ├── OpenCanopy.efi                   # Giao diện đồ họa OpenCore (tùy chọn)
@@ -111,7 +120,8 @@ EFI/
     │   ├── CPUFriend.kext (v1.2.9)          # Tối ưu hóa xung nhịp CPU
     │   ├── CPUFriendDataProvider.kext       # Bảng vector tần số CPU Tiger Lake
     │   ├── VirtualSMC.kext                  # Giả lập Apple SMC
-    │   ├── WhateverXe.kext (v0.5.0)         # Driver tăng tốc iGPU Intel Iris Xe
+    │   ├── WhateverXe.kext (v0.7.0)         # Driver tăng tốc iGPU Intel Iris Xe
+    │   ├── S0ixStandby.kext (v0.5.4)        # Sleep Deep Idle qua Modern Standby (mục 2.9)
     │   ├── AMFIPass.kext                    # Vượt qua rào cản AMFI trên macOS 15
     │   ├── PC711Probe.kext (v1.8.1)         # Bản vá lỗi NVMe SK hynix BC711
     │   ├── AppleALC.kext (v1.9.8)           # Quản lý âm thanh Realtek ALC236

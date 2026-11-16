@@ -48,17 +48,81 @@
 			</dict>
 			<dict>
 				<key>Comment</key>
-				<string>Declare S3 so macOS allows sleep; used for hibernatemode 25 (S4)</string>
+				<string>disabled for the S0ixStandby trial: macOS must not request S3</string>
+				<key>Enabled</key>
+				<false/>
+				<key>Path</key>
+				<string>SSDT-S3.aml</string>
+			</dict>
+			<dict>
+				<key>Comment</key>
+				<string>S0ixStandby: advertise Deep Idle</string>
 				<key>Enabled</key>
 				<true/>
 				<key>Path</key>
-				<string>SSDT-S3.aml</string>
+				<string>SSDT-DEEPIDLE.aml</string>
+			</dict>
+			<dict>
+				<key>Comment</key>
+				<string>PEPD._STA visible to Darwin (pairs with the XSTA patch)</string>
+				<key>Enabled</key>
+				<true/>
+				<key>Path</key>
+				<string>SSDT-PEPD-STA.aml</string>
+			</dict>
+			<dict>
+				<key>Comment</key>
+				<string>Raise package PL1/PL2 (SSDT-PL1)</string>
+				<key>Enabled</key>
+				<true/>
+				<key>Path</key>
+				<string>SSDT-PL1.aml</string>
 			</dict>
 		</array>
 		<key>Delete</key>
 		<array/>
 		<key>Patch</key>
-		<array/>
+		<array>
+			<dict>
+				<key>Base</key>
+				<string></string>
+				<key>BaseSkip</key>
+				<integer>0</integer>
+				<key>Comment</key>
+				<string>PEPD._STA to XSTA (unique AML sequence, one match)</string>
+				<key>Count</key>
+				<integer>1</integer>
+				<key>Enabled</key>
+				<true/>
+				<key>Find</key>
+				<data>
+				X1NUQQCgHpGSlU9TWVM=
+				</data>
+				<key>Limit</key>
+				<integer>0</integer>
+				<key>Mask</key>
+				<data>
+				</data>
+				<key>OemTableId</key>
+				<data>
+				</data>
+				<key>Replace</key>
+				<data>
+				WFNUQQCgHpGSlU9TWVM=
+				</data>
+				<key>ReplaceMask</key>
+				<data>
+				</data>
+				<key>Skip</key>
+				<integer>0</integer>
+				<key>TableLength</key>
+				<integer>0</integer>
+				<key>TableSignature</key>
+				<data>
+				RFNEVA==
+				</data>
+			</dict>
+		</array>
 		<key>Quirks</key>
 		<dict>
 			<key>FadtEnableReset</key>
@@ -592,7 +656,7 @@
 				<key>BundlePath</key>
 				<string>ForbiddenItlwm.kext</string>
 				<key>Comment</key>
-				<string>ForbiddenItlwm 0.5.4-beta.2 Sequoia (Wi-Fi + AWDL/AirDrop)</string>
+				<string>ForbiddenItlwm 0.5.4-beta.2 Sequoia (AWDL)</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
@@ -718,7 +782,7 @@
 				<key>BundlePath</key>
 				<string>BTLEAdvFixup.kext</string>
 				<key>Comment</key>
-				<string>BTLEAdvFixup 0.9.1 Sequoia (BLE advertising for AirDrop)</string>
+				<string>BTLEAdvFixup 0.9.1 Sequoia</string>
 				<key>Enabled</key>
 				<true/>
 				<key>ExecutablePath</key>
@@ -741,6 +805,24 @@
 				<true/>
 				<key>ExecutablePath</key>
 				<string>Contents/MacOS/BlueToolFixup</string>
+				<key>MaxKernel</key>
+				<string></string>
+				<key>MinKernel</key>
+				<string></string>
+				<key>PlistPath</key>
+				<string>Contents/Info.plist</string>
+			</dict>
+			<dict>
+				<key>Arch</key>
+				<string>x86_64</string>
+				<key>BundlePath</key>
+				<string>S0ixStandby.kext</string>
+				<key>Comment</key>
+				<string>S0ixStandby 0.5.4 (28069d3), built from source</string>
+				<key>Enabled</key>
+				<true/>
+				<key>ExecutablePath</key>
+				<string>Contents/MacOS/S0ixStandby</string>
 				<key>MaxKernel</key>
 				<string></string>
 				<key>MinKernel</key>
@@ -772,7 +854,7 @@
 		<dict>
 			<key>Cpuid1Data</key>
 			<data>
-			6gYJAAAAAAAAAAAAAAAAAA==
+			5QYHAAAAAAAAAAAAAAAAAA==
 			</data>
 			<key>Cpuid1Mask</key>
 			<data>
@@ -1297,7 +1379,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-btlfxbeta -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg -vi2c-force-polling -wexnohwdecode vsmchbkp=1 -wexvafix -wexleakfix -wexteardownfix -wexnoposh -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096</string>
+				<string>-btlfxbeta -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg -vi2c-force-polling -wexnohwdecode vsmchbkp=1 -wexvafix -wexleakfix -wexteardownfix -wexnoposh -s0ixdbg -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==

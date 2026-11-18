@@ -1,6 +1,6 @@
-// Keeps the bluetoothd pages that BlueToolFixup patches resident.
+// Keeps the bluetoothd pages that BlueToolFixup and BTLEAdvFixup patch resident.
 //
-// BlueToolFixup patches /usr/sbin/bluetoothd in place from cs_validate_page,
+// Both kexts patch /usr/sbin/bluetoothd in place from cs_validate_page,
 // so the patched bytes live in the shared file cache. bluetoothd is stored
 // APFS-compressed on the sealed system volume, in 16 KiB chunks that are hashed
 // as a whole. When memory pressure evicts part of a chunk and it is paged back
@@ -28,17 +28,46 @@
 #define TARGET "/usr/sbin/bluetoothd"
 #define CHUNK 16384
 #define MAX_CHUNKS 64
+#define MAX_PATTERN 32
 
-// BlueToolFixup 2.7.2 bluetoothd patches on Sequoia, as found on disk and as
-// patched in the cache (the 15.4 chipset patch becomes eight NOPs).
-static const struct { const char *name; uint8_t len; uint8_t bytes[8]; } kPatterns[] = {
-	{"vendor",       7, {0x81, 0xFA, 0x5C, 0x0A, 0x00, 0x00, 0x74}},
-	{"vendor*",      7, {0x81, 0xFA, 0x5C, 0x0A, 0x00, 0x00, 0xEB}},
-	{"chipset",      7, {0x81, 0xF9, 0xCF, 0x07, 0x00, 0x00, 0x72}},
-	{"chipset*",     7, {0x81, 0xF9, 0xCF, 0x07, 0x00, 0x00, 0xEB}},
-	{"chipset15.4",  8, {0x81, 0xF9, 0x6F, 0x17, 0x00, 0x00, 0x77, 0x30}},
-	{"chipset15.4*", 8, {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
+// bluetoothd patch sites as found on disk and as patched in the cache. "??"
+// matches any byte: the rel32 of a call, which differs between builds.
+static const struct { const char *name, *hex; } kPatterns[] = {
+	// BlueToolFixup 2.7.2 on Sequoia (the 15.4 chipset patch becomes eight NOPs).
+	{"vendor",       "81 FA 5C 0A 00 00 74"},
+	{"vendor*",      "81 FA 5C 0A 00 00 EB"},
+	{"chipset",      "81 F9 CF 07 00 00 72"},
+	{"chipset*",     "81 F9 CF 07 00 00 EB"},
+	{"chipset15.4",  "81 F9 6F 17 00 00 77 30"},
+	{"chipset15.4*", "90 90 90 90 90 90 90 90"},
+	// BTLEAdvFixup 0.9.1 (ForbiddenItlwm, -btleadv): LE advertising and scanning
+	// gates, random address and extended connection checks.
+	{"btle-adv",     "84 C0 0F 84 38 01 00 00 E8 ?? ?? ?? ?? 48 8B 08 48 89 C7 FF 91 C0 07 00 00 41 89 C6"},
+	{"btle-scan",    "84 C0 0F 84 38 01 00 00 E8 ?? ?? ?? ?? 48 8B 08 48 89 C7 FF 91 48 08 00 00 41 89 C6"},
+	{"btle-gate*",   "84 C0 90 90 90 90 90 90 E8 ?? ?? ?? ?? 48 8B 08 48 89 C7 B8 01 00 00 00 90 41 89 C6"},
+	{"btle-rand",    "83 B8 F8 02 00 00 03 77 23 31 FF E8 ?? ?? ?? ??"},
+	{"btle-rand*",   "83 B8 F8 02 00 00 03 77 23 90 90 90 90 90 90 90"},
+	{"btle-ext",     "0F B6 BD 5E FF FF FF E8 ?? ?? ?? ??"},
+	{"btle-ext*",    "BF 01 00 00 00 90 90 E8 ?? ?? ?? ??"},
 };
+#define NPATTERNS (sizeof(kPatterns) / sizeof(kPatterns[0]))
+static uint8_t patBytes[NPATTERNS][MAX_PATTERN], patMask[NPATTERNS][MAX_PATTERN];
+static size_t patLen[NPATTERNS];
+
+static void parsePatterns(void) {
+	for (size_t p = 0; p < NPATTERNS; p++)
+		for (const char *h = kPatterns[p].hex; *h && patLen[p] < MAX_PATTERN; h += h[2] ? 3 : 2) {
+			const bool wild = h[0] == '?';
+			patBytes[p][patLen[p]] = wild ? 0 : (uint8_t)strtoul((char[]){h[0], h[1], 0}, NULL, 16);
+			patMask[p][patLen[p]++] = wild ? 0 : 0xFF;
+		}
+}
+
+static bool matches(const uint8_t *at, size_t p) {
+	for (size_t i = 0; i < patLen[p]; i++)
+		if ((at[i] & patMask[p][i]) != patBytes[p][i]) return false;
+	return true;
+}
 
 static off_t chunks[MAX_CHUNKS];
 static bool locked[MAX_CHUNKS];
@@ -77,17 +106,17 @@ static bool x86Slice(int fd, off_t size, off_t *start, off_t *end) {
 // Finds the chunks holding a patch site. A chunk that cannot be read is
 // already failing verification, so it is wired as well once it can be.
 static void scan(int fd, off_t start, off_t end) {
-	static uint8_t buf[CHUNK + 16];
+	static uint8_t buf[CHUNK + MAX_PATTERN];
 	for (off_t off = start & ~(off_t)(CHUNK - 1); off < end; off += CHUNK) {
-		ssize_t got = pread(fd, buf, CHUNK + 16, off);
+		ssize_t got = pread(fd, buf, CHUNK + MAX_PATTERN, off);
 		if (got < 0) {
 			addChunk(off, strerror(errno));
 			continue;
 		}
 		for (ssize_t i = 0; i < got && i < CHUNK; i++)
-			for (size_t p = 0; p < sizeof(kPatterns) / sizeof(kPatterns[0]); p++)
-				if (i + kPatterns[p].len <= got && !memcmp(buf + i, kPatterns[p].bytes, kPatterns[p].len) &&
-					(kPatterns[p].bytes[0] != 0x90 || (i > 0 && buf[i - 1] != 0x90)))
+			for (size_t p = 0; p < NPATTERNS; p++)
+				if (i + (ssize_t)patLen[p] <= got && matches(buf + i, p) &&
+					(patBytes[p][0] != 0x90 || (i > 0 && buf[i - 1] != 0x90)))
 					addChunk(off + i, kPatterns[p].name);
 	}
 }
@@ -98,6 +127,7 @@ int main(int argc, char **argv) {
 	struct stat st;
 	if (fd < 0 || fstat(fd, &st)) { perror(TARGET); return 1; }
 	off_t start, end;
+	parsePatterns();
 	if (!x86Slice(fd, st.st_size, &start, &end)) { fprintf(stderr, "btpin: no x86_64 slice\n"); return 1; }
 	scan(fd, start, end);
 	if (listOnly || !nchunks) return nchunks ? 0 : 1;

@@ -65,7 +65,8 @@ flowchart LR
 
 ### 2.5. Bluetooth không tự tắt (`btpin`)
 * **Vấn đề:** `BlueToolFixup` vá `/usr/sbin/bluetoothd` ngay trong bộ nhớ đệm file. File này được nén theo khối 16 KB trên phân vùng hệ thống đã niêm phong. Khi một phần khối bị đẩy ra khỏi RAM rồi nạp lại, APFS kiểm tra cả khối cùng trang đã vá, báo `Data hash mismatch`, và `bluetoothd` chết với `SIGBUS KERN_MEMORY_ERROR` khiến Bluetooth tự tắt.
-* **Giải pháp:** [`PostInstall/Tools/btpin.c`](PostInstall/Tools/btpin.c) tìm các khối chứa chỗ vá và khóa chúng trong RAM (`mlock`, khoảng 64 KB), để chúng không bao giờ bị nạp lại. Cài một lần sau khi cài macOS:
+* **Giải pháp:** [`PostInstall/Tools/btpin.c`](PostInstall/Tools/btpin.c) tìm các khối chứa chỗ vá và khóa chúng trong RAM (`mlock`, khoảng 96 KB), để chúng không bao giờ bị nạp lại.
+* `BTLEAdvFixup` (đi kèm ForbiddenItlwm để có AirDrop) cũng vá `bluetoothd` theo cùng cách, ở khối `0x3A4000` và `0x4A0000`. Từ 16/11 Bluetooth chết lại vì btpin chưa khóa hai khối này; btpin bản 2026-11-18 đã thêm mẫu của nó, `btpin -n` liệt kê 6 khối. Sau khi cập nhật, chạy lại lệnh cài bên dưới. Cài một lần sau khi cài macOS:
   ```bash
   sudo sh PostInstall/Tools/install_btpin.sh
   ```

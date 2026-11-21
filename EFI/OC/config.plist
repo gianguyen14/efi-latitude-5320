@@ -990,7 +990,7 @@
 		<key>Debug</key>
 		<dict>
 			<key>AppleDebug</key>
-			<true/>
+			<false/>
 			<key>ApplePanic</key>
 			<true/>
 			<key>DisableWatchDog</key>
@@ -1004,7 +1004,7 @@
 			<key>SysReport</key>
 			<false/>
 			<key>Target</key>
-			<integer>67</integer>
+			<integer>0</integer>
 		</dict>
 		<key>Entries</key>
 		<array/>
@@ -1397,7 +1397,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-btlfxbeta -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixdbg -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert -wexnoccs</string>
+				<string>-btlfxbeta amfi_get_out_of_my_way=0x1 -allow3d -disablegfxfirmware watchdog=0 debug=0x100 -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert -wexnoccs -wexnohwdecode</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==

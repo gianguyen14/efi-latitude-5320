@@ -6,10 +6,10 @@ Snapshot: 2026-11-02. Language with the user: Vietnamese. The user runs every su
 
 - Dell Latitude 5320, i5-1145G7, Iris Xe `8086:9a49`. GPU fuses: 5 DSS, 80 EU, **6 L3 banks**.
 - AX201 Wi-Fi/Bluetooth, ALC236, SK hynix BC711 SSD, 8 GB RAM.
-- macOS Sequoia 15.8.1 (24H32), OpenCore 1.0.8, SMBIOS MacBookPro16,2.
-- **The serial, MLB and UUID are placeholders** (`C02XXXXXXXXX`). iServices are not set up.
+- macOS Tahoe 26.7.1 (25G241), OpenCore 1.0.8, SMBIOS MacBookPro16,2. (Sections dated before 2026-11-21 were written on Sequoia 15.8.1.)
+- **The serial, MLB and UUID in this repo are placeholders** (`C02XXXXXXXXX`). The ESP on the machine carries a generated, unregistered serial/MLB/UUID and the ROM equals the Wi-Fi MAC (since 2026-11-21); never commit those. iServices (iMessage/iCloud) still sign out after a few seconds; not investigated further.
 - **Hard rule:** `XHCI-unsupported.kext` must always stay `Enabled = True`.
-- Current boot-args: `-btlfxbeta -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg -vi2c-force-polling itlwm_he=1 -wexnohwdecode`
+- Current boot-args (2026-11-21): `-btlfxbeta amfi_get_out_of_my_way=0x1 -allow3d -disablegfxfirmware watchdog=0 debug=0x100 -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixacnortc -btleadv -itlawdl* ... -wexgvanoassert -wexnoccs -wexnohwdecode` (full list in docs/HARDWARE_AND_PATCHES.md).
 
 ## Repos
 
@@ -189,3 +189,16 @@ Snapshot: 2026-11-02. Language with the user: Vietnamese. The user runs every su
 - The Graphics 0.3.2 package is at `~/.gemini/antigravity/scratch/WhateverXe-Graphics-0.3.2.pkg`.
 - `-wexnoreset` turns off the engine-reset hook.
 - `-wexnohwdecode` can be removed from boot-args to bring hardware decode back.
+
+## 2026-11-21 state (GPU, video, iPhone Mirroring)
+
+- **Graphics payload:** WhateverXe-Graphics 0.4.4 installed (`PostInstall/Tools/gfx044.sh`: check/backup/install/rollback/verify; backup of 0.4.0 in `~/gfx-backups`). The fork flags `-wexxferfix`, `-wexvafix`, `-wexleakfix`, `-wexnullguard` are obsolete with it and were removed from boot-args.
+- **Kext:** WhateverXe 0.8.3 = upstream 0.8.3 merged into the fork (branch `merge/upstream-0.8.3`, workspace `~/Developer/OpenCore-reference/WhateverXe-merge083`), RELEASE build (`python3 tools/build.py --release`), plus the new `-wexnoccs` (clears `EnableMultiContext` so compute contexts on the CCS engine are not created; stops the GPU restart storm from `mediaanalysisd`). The page-fix fingerprint runs in `captureFirmware` (kernel load) so it sees `_cs_validate_page` before BlueToolFixup/BTLEAdvFixup hook it.
+- **Video:** hardware H.264 encode works (about 113 fps), HEVC encoder is not registered (-12908). Hardware H.264 decode fails with -12900 on 0.4.4 (VP context rejected), so decode is software; `-wexnohwdecode` additionally hides HEVC hardware decode.
+- **iPhone Mirroring** works through Mirra (see README 2.7): needs `amfi_get_out_of_my_way=0x1`, `-wexnohwdecode`, and a local edit of Mirra's `decoder.py` for build 25G241. Slightly laggy (Wi-Fi/AWDL).
+- **AMFI:** the dash form `-amfi_get_out_of_my_way` was never read by the kernel; the working form is `amfi_get_out_of_my_way=0x1`.
+- **Debug settings off:** `Misc/Debug/Target=0`, `AppleDebug=false`; `keepsyms`, `msgbuf`, `-pc711pdbg`, `-s0ixdbg` removed.
+- **CPU:** 1 thread about 4.1 GHz; sustained all-core load drops to about 5.5 W / 700 MHz roughly 40 s into a burst, not thermal (die 48-60 C); firmware/EC or RAPL average-power behaviour, not resolved. SSDT-PL1 only raises limits (a PL2=20 W trial did nothing for that reason).
+- **Sleep:** pmset values (`sleep 1`, `hibernatemode 3`, `standby 1`) are intentional with the S0ixStandby kext; do not reset them to the old `sleep 0` advice.
+- **efi_selftest on macOS 26:** B1/B2 report PL1T/ALS0/PNLF/USBX/PEPD as missing because IOACPIPlane is not exposed; they exist in the registry. Use the corrected checks.
+- **PC711Probe.kext is not loaded on macOS 26:** its config entry has `MaxKernel 24.99.99` (Sequoia) and Tahoe is Darwin 25.6, so the BC711 MSI-X workaround is skipped. The SSD still works: no NVMe timeout or panic in a day of logs, only two `AppleNVMe Assert failed` lines at each boot. Raising MaxKernel was not tried (an incompatible probe kext could panic at early boot); do it only with a USB EFI at hand if NVMe timeouts appear.

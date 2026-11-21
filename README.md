@@ -73,13 +73,15 @@ flowchart LR
 
 ### 2.6. AirPlay phản chiếu iPhone sang Mac bị đen (`airplayfix`)
 * **Vấn đề:** bộ thu AirPlay giải mã video ra định dạng 420v, WindowServer phải đổi sang BGRA bằng GVA nhưng driver Intel Tiger Lake không làm được, nên hình đen (chỉ hiện khi có lớp khác như nút X cùng được composite). Phản chiếu vẫn kết nối bình thường, chỉ thiếu hình.
-* **Giải pháp:** [`PostInstall/Tools/airplayfix/`](PostInstall/Tools/airplayfix/) biên dịch một thư viện nhỏ ép bộ thu (chạy trong ControlCenter) xuất BGRA, đặt `enableGVATransfer=NO` để VideoToolbox đổi định dạng bằng CPU (đổi bằng GPU làm treo GPU), rồi cài LaunchAgent tự áp dụng mỗi lần đăng nhập. Cần boot-arg `amfi_get_out_of_my_way` (đã có trong EFI này). Cài một lần sau khi cài macOS, **không dùng sudo**:
+* **Giải pháp:** [`PostInstall/Tools/airplayfix/`](PostInstall/Tools/airplayfix/) biên dịch một thư viện nhỏ ép bộ thu (chạy trong ControlCenter) xuất BGRA, đặt `enableGVATransfer=NO` để VideoToolbox đổi định dạng bằng CPU (đổi bằng GPU làm treo GPU), rồi cài LaunchAgent tự áp dụng mỗi lần đăng nhập. Cần boot-arg `amfi_get_out_of_my_way=0x1` (đã có trong EFI này; dạng có dấu gạch `-amfi_get_out_of_my_way` không được kernel đọc). Cài một lần sau khi cài macOS, **không dùng sudo**:
   ```bash
   sh PostInstall/Tools/airplayfix/install_airplayfix.sh
   ```
   Gỡ bỏ: `sh PostInstall/Tools/airplayfix/uninstall_airplayfix.sh`. Không cài thì EFI vẫn chạy bình thường, chỉ AirPlay mirroring bị đen.
 
-### 2.7. Hạn chế đã biết: iPhone Mirroring (app "iPhone Mirroring") không dùng được
+### 2.7. iPhone Mirroring (app "iPhone Mirroring"): chỉ chạy được qua công cụ Mirra
+* **Cập nhật 2026-11-21:** với [Mirra](https://github.com/eiyuumiru/Mirra) (cần iPhone đã jailbreak, kết nối điều khiển qua USB, video đi qua `awdl0`), iPhone Mirroring lên hình trên máy này, hơi giật do đường Wi-Fi/AWDL. Cần `amfi_get_out_of_my_way=0x1` (để hook nạp được vào app có library-validation) và `-wexnohwdecode` (iPhone gửi H.264 thay vì HEVC). Hook giải mã của Mirra (gỡ cờ FLS cho luồng Display P3) mặc định chỉ bật cho macOS build 25G332; máy này là 25G241 nên phải thêm `25G241` vào `INSPECTED_BUILD` trong `scripts/decoder.py` của Mirra (và cập nhật hash trong `manifest.json`), và việc này mất khi Mirra cập nhật. Không có hook, giải mã lỗi `-8969` và cửa sổ không có hình.
+* Phần dưới đây là kết quả cũ khi chỉ dùng Bluetooth gốc của Apple, không qua Mirra:
 * Máy báo "Không thể kết nối với iPhone" sau khi nhập passcode. `bluetoothd` thử kết nối Bluetooth LE tới iPhone nhưng controller AX201 không bao giờ nối được tới thiết bị Apple (kết nối tới tai nghe BLE thường vẫn bình thường). Đã thử tắt `BTLEAdvFixup` và để iPhone sáng màn hình, kết quả không đổi. Tính năng này chính thức chỉ dành cho Mac Apple Silicon hoặc Intel có T2, nên coi là không hỗ trợ.
 * Phản chiếu màn hình iPhone lên Mac bằng AirPlay thì dùng được (xem mục 2.6).
 
@@ -117,11 +119,11 @@ EFI/
     │   ├── ResetNvramEntry.efi              # Tiện ích xóa nhanh biến NVRAM
     │   └── ToggleSipEntry.efi               # Tiện ích bật/tắt nhanh SIP
     ├── Kexts/
-    │   ├── Lilu.kext (v1.6.8)               # Kext nền tảng
-    │   ├── CPUFriend.kext (v1.2.9)          # Tối ưu hóa xung nhịp CPU
+    │   ├── Lilu.kext (v1.7.2)               # Kext nền tảng
+    │   ├── CPUFriend.kext (v1.3.0)          # Tối ưu hóa xung nhịp CPU
     │   ├── CPUFriendDataProvider.kext       # Bảng vector tần số CPU Tiger Lake
     │   ├── VirtualSMC.kext                  # Giả lập Apple SMC
-    │   ├── WhateverXe.kext (v0.7.0)         # Driver tăng tốc iGPU Intel Iris Xe
+    │   ├── WhateverXe.kext (v0.8.3)         # Driver tăng tốc iGPU Intel Iris Xe
     │   ├── S0ixStandby.kext (v0.5.4)        # Sleep Deep Idle qua Modern Standby (mục 2.9)
     │   ├── AMFIPass.kext                    # Vượt qua rào cản AMFI trên macOS 15
     │   ├── PC711Probe.kext (v1.8.1)         # Bản vá lỗi NVMe SK hynix BC711

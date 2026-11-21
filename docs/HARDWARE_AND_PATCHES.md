@@ -49,7 +49,7 @@ EFI này sử dụng giải pháp đồ họa tiên tiến được biên dịch
 * Sử dụng kext chuyên dụng [`PC711Probe.kext`](https://github.com/hrx114514x/PC711Probe) phiên bản `v1.8.1` (phát triển bởi `stationk9` & `hrx114514x`).
 * **Vị trí nạp trong config.plist:** Nạp ngay sau `Lilu.kext` (vị trí ưu tiên cao nhất).
 * **Phạm vi kernel:** `MinKernel: 20.0.0` (macOS 11 Big Sur) đến `MaxKernel: 24.99.99` (macOS 15 Sequoia).
-* **Boot-arg:** `-pc711pdbg` để bật chế độ tương thích và ghi log chẩn đoán hàng đợi I/O của NVMe.
+* **Boot-arg:** `-pc711pdbg` từng được dùng để ghi log chẩn đoán hàng đợi I/O của NVMe; đã gỡ ngày 2026-11-21 cùng các cờ debug khác.
 * **Hiệu năng:** Ổ cứng đạt tốc độ đọc/ghi NVMe PCIe 3.0 x4 đầy đủ, S.M.A.R.T Verified và hỗ trợ TRIM gốc của APFS.
 
 ---
@@ -137,24 +137,24 @@ Toàn bộ hệ thống cổng USB được ánh xạ chuẩn xác qua `USBMap.k
 Dưới đây là bảng giải trình kỹ thuật cho chuỗi boot-args đang sử dụng trong EFI:
 
 ```text
-igfxonly=1 -btlfxbeta -btlfxallanyaddr ipc_control_port_options=0 -amfi_get_out_of_my_way -allow3d -disablegfxfirmware watchdog=0 -wegnoegpu keepsyms=1 debug=0x100 msgbuf=1048576 -pc711pdbg alcid=33 -vi2c-force-polling igfxonln=1 itlwm_he=1
+-btlfxbeta amfi_get_out_of_my_way=0x1 -allow3d -disablegfxfirmware watchdog=0 debug=0x100 -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert -wexnoccs -wexnohwdecode
 ```
 
-| STT | Boot-arg | Mục đích kỹ thuật |
-|:---:|---|---|
-| 1 | `igfxonly=1` | Chỉ kích hoạt card đồ họa tích hợp iGPU, bỏ qua việc khởi tạo GPU rời không tương thích. |
-| 2 | `-btlfxbeta` | Cho phép `BlueToolFixup` hoạt động trên các phiên bản macOS mới nhất / beta (macOS 15 Sequoia). |
-| 3 | `-btlfxallanyaddr` | Bỏ qua việc so khớp địa chỉ MAC/firmware của Bluetooth, giúp nạp patch trên mọi chipset Intel AX. |
-| 4 | `ipc_control_port_options=0` | Nới lỏng kiểm tra quyền IPC Mach Port của kernel, cần thiết cho một số daemon đồ họa tùy biến. |
-| 5 | `-amfi_get_out_of_my_way` | Vô hiệu hóa bộ lọc hạn chế của Apple Mobile File Integrity (kết hợp cùng `AMFIPass.kext`). |
-| 6 | `-allow3d` | Mở khóa khả năng kết xuất 3D và Metal acceleration trong driver patch WhateverXe. |
-| 7 | `-disablegfxfirmware` | Chặn macOS nạp Apple Intel Graphics Firmware lên card Tiger Lake, tránh lỗi panic kernel. |
-| 8 | `watchdog=0` | Tắt bộ đếm thời gian kernel watchdog, chống crash tự khởi động khi driver đồ họa xử lý chậm. |
-| 9 | `-wegnoegpu` | Chặn WhateverGreen thăm dò và kích hoạt GPU ngoài. |
-| 10 | `keepsyms=1 debug=0x100` | Giữ lại bảng ký hiệu debug và ngăn máy tự reboot khi gặp sự cố, giúp hiển thị panic log ra màn hình. |
-| 11 | `msgbuf=1048576` | Mở rộng bộ đệm log nhân kernel (dmesg buffer) lên 1 MB để không bị mất thông tin chẩn đoán. |
-| 12 | `-pc711pdbg` | Bật chế độ tương thích và debug MSI-X queue cho ổ cứng NVMe SK hynix BC711. |
-| 13 | `alcid=33` | Layout ID cho chip âm thanh Realtek ALC3254 / ALC236 của Dell Latitude 5320. |
-| 14 | `-vi2c-force-polling` | Ép driver touchpad VoodooI2C hoạt động ở chế độ Polling, đảm bảo mượt mà tuyệt đối trên Dell. |
-| 15 | `igfxonln=1` | Giữ màn hình iGPU luôn ở trạng thái online, ngăn hiện tượng đen màn hình khi thức dậy. |
-| 16 | `itlwm_he=1` | Mở khóa chuẩn Wi-Fi 6 (802.11ax / High Efficiency) cho card Intel AX201 trong AirportItlwm. |
+Chuỗi trên là boot-args đang chạy (cập nhật 2026-11-21, macOS 26.7.1). Các cờ debug cũ (`keepsyms=1`, `msgbuf=1048576`, `-pc711pdbg`, `-s0ixdbg`) và `Misc/Debug/Target` (đã về 0) đã được gỡ. Bảng dưới đây chỉ ghi các cờ mà tài liệu này biết rõ mục đích; các cờ còn lại được ghi ở nhóm cuối.
+
+| Boot-arg | Mục đích kỹ thuật |
+|---|---|
+| `-btlfxbeta` | Cho phép `BlueToolFixup` hoạt động trên các phiên bản macOS mới nhất. |
+| `amfi_get_out_of_my_way=0x1` | Vô hiệu hóa AMFI (kết hợp `AMFIPass.kext`). Phải viết đúng dạng `tên=giá_trị`: dạng cũ `-amfi_get_out_of_my_way` (có dấu gạch) không được kernel đọc, AMFI vẫn bật. Với giá trị này, `DYLD_INSERT_LIBRARIES` vào được các app có library-validation (đã kiểm chứng trên iPhone Mirroring). |
+| `-allow3d` | Mở khóa kết xuất 3D và Metal acceleration trong driver WhateverXe. |
+| `-disablegfxfirmware` | Chặn macOS nạp firmware đồ họa Intel lên Tiger Lake (không có GuC). |
+| `watchdog=0`, `debug=0x100` | Tắt watchdog kernel và ngăn tự khởi động lại khi gặp panic. |
+| `-vi2c-force-polling` | Ép VoodooI2C chạy chế độ polling cho touchpad. |
+| `-wexteardownfix` | WhateverXe: đợi context GPU rỗi trước khi giải phóng (sửa treo sau khi giải phóng context). |
+| `-wexnoposh` | WhateverXe: chạy context RCS không dùng POSH, tránh bão reset GPU khi gọi video. |
+| `-wexgvanoassert` | WhateverXe: bỏ assert của AppleGVACore gây sập WindowServer. |
+| `-wexnoccs` | WhateverXe: đặt `EnableMultiContext=0` trước khi accelerator khởi động, để `mediaanalysisd`/Vision không mở context compute trên engine CCS (nguyên nhân bão "Hung/Stuck ring: CCS"). |
+| `-wexnohwdecode` | WhateverXe: không quảng bá giải mã HEVC phần cứng, buộc iPhone gửi H.264 và giải mã bằng phần mềm (cần cho iPhone Mirroring). |
+| `-s0ixacnortc`, `vsmchbkp=1` | Tham số của `S0ixStandby` / VirtualSMC (chưa ghi lại mục đích chi tiết). |
+| `-btleadv` | Tham số của `BTLEAdvFixup` (chưa ghi lại mục đích chi tiết). |
+| `-itlawdl*`, `itlawdlintcoal=4`, `itlawdltxqueue=4096` | Cờ tính năng AWDL (AirDrop) của `ForbiddenItlwm` (chưa ghi lại mục đích từng cờ). |

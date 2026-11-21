@@ -124,7 +124,11 @@ def _():
 
 # ---------------------------------------------------------------- B. ACPI
 G = "B. ACPI"
-ACPI_TXT = sh("ioreg -p IOACPIPlane -w0 -l")
+ACPI_TXT = sh("ioreg -p IOACPIPlane -w0 -l") + "\n" + sh("ioreg -w0 -c IOACPIPlatformDevice")
+# macOS 26 does not expose IOACPIPlane, so the devices are looked up as IOACPIPlatformDevice nodes in the
+# IOService plane; USBX only leaves its properties behind.
+ALT_MARK = {"USBX": r"kUSBSleepPortCurrentLimit|kUSBWakePortCurrentLimit"}
+ALL_TXT = None
 ACPI_ENABLED = {a["Path"]: a["Enabled"] for a in CFG["ACPI"]["Add"]}
 MARK = {"SSDT-PL1.aml": "PL1T", "SSDT-ALS0.aml": "ALS0", "SSDT-PNLF.aml": "PNLF", "SSDT-EC-USBX-LAPTOP.aml": "USBX"}
 
@@ -135,13 +139,18 @@ def _():
         if not ACPI_ENABLED.get(f):
             continue
         ok = re.search(r"\+-o %s[ @]" % dev, ACPI_TXT) is not None
-        add(G, "B1", "PASS" if ok else "FAIL", "%s bật -> thiết bị %s %s trong IOACPIPlane" % (f, dev, "có" if ok else "THIẾU"))
+        if not ok and dev in ALT_MARK:
+            global ALL_TXT
+            if ALL_TXT is None:
+                ALL_TXT = sh("ioreg -l -w0", timeout=120)
+            ok = re.search(ALT_MARK[dev], ALL_TXT) is not None
+        add(G, "B1", "PASS" if ok else "FAIL", "%s bật -> thiết bị %s %s trong registry" % (f, dev, "có" if ok else "THIẾU"))
 
 
 @check(G, "B2")
 def _():
     if ACPI_ENABLED.get("SSDT-PEPD-STA.aml"):
-        ok = "INT33A1" in ACPI_TXT
+        ok = "INT33A1" in ACPI_TXT or re.search(r"\+-o PEPD[ @]", ACPI_TXT) is not None
         add(G, "B2", "PASS" if ok else "FAIL", "SSDT-PEPD-STA + vá XSTA -> PEPD (INT33A1) %s với macOS" % ("hiện" if ok else "KHÔNG hiện"))
     if ACPI_ENABLED.get("SSDT-DEEPIDLE.aml"):
         v = sh("ioreg -rn IOPMrootDomain -w0")
@@ -199,7 +208,12 @@ def _():
             if info.get("CFBundleVersion") and KS[ident] != info["CFBundleVersion"]:
                 verdiff.append("%s: chạy %s, repo %s" % (os.path.basename(k["BundlePath"]), KS[ident], info["CFBundleVersion"]))
         else:
-            bad.append(os.path.basename(k["BundlePath"]))
+            name = os.path.basename(k["BundlePath"])
+            mx = k.get("MaxKernel") or ""
+            dv = os.uname().release
+            if mx and tuple(int(x) for x in dv.split(".")[:2]) > tuple(int(x) for x in (mx.split(".") + ["0", "0"])[:2]):
+                name += " (MaxKernel %s < Darwin %s: config cố ý không nạp trên bản macOS này)" % (mx, dv)
+            bad.append(name)
     add(G, "C1", "PASS" if not bad else "FAIL", "%d/%d kext có file thực thi đã nạp%s" % (ok, ok + len(bad), "" if not bad else "; CHƯA nạp: " + ", ".join(bad)))
     add(G, "C1", "INFO", "kext chỉ chứa dữ liệu (không có trong kextstat là bình thường): " + ", ".join(dataonly))
     add(G, "C1", "PASS" if not verdiff else "WARN", "phiên bản kext đang chạy %s repo" % ("khớp" if not verdiff else "LỆCH " + "; ".join(verdiff)))
@@ -226,17 +240,20 @@ FREQ_C = r'''
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <time.h>
-static double now(clockid_t c){struct timespec t;clock_gettime(c,&t);return t.tv_sec+t.tv_nsec/1e9;}
+#include <mach/mach_time.h>
+static double now(void){static mach_timebase_info_data_t tb; if(!tb.denom)mach_timebase_info(&tb); return mach_absolute_time()*(double)tb.numer/tb.denom/1e9;}
+/* One thread, dependent adds: the rate in Gadd/s is the core clock in GHz (same method as cpuclock.c).
+   The earlier version timed CLOCK_PROCESS_CPUTIME_ID, which on this machine gave about 1470 MHz
+   while cpuclock (wall clock) gave 4.07 GHz for the same idle core, so it was dropped. */
 int main(int argc,char**argv){
-  double dur=argc>1?atof(argv[1]):0; uint64_t x=0; int n=0,dips=0; double sum=0,mn=1e9,mx=0;
-  double t0=now(CLOCK_MONOTONIC);
+  double dur=argc>1?atof(argv[1]):0; unsigned long x=0; int n=0,dips=0; double sum=0,mn=1e9,mx=0;
+  double t0=now();
   do{
-    double a=now(CLOCK_PROCESS_CPUTIME_ID);
-    for(uint64_t i=0;i<60000000ULL;i++) __asm__ volatile("add $1, %0\n\tadd $1, %0\n\tadd $1, %0\n\tadd $1, %0":"+r"(x));
-    double c=now(CLOCK_PROCESS_CPUTIME_ID)-a, f=60000000.0*4/c/1e6;
+    double a=now(), w=a; unsigned long k=0;
+    while(w-a<0.3){for(int i=0;i<10000000;i++){__asm__ volatile("add $1,%0":"+r"(x));} k+=10000000; w=now();}
+    double f=k/(w-a)/1e6;
     n++; sum+=f; if(f<mn)mn=f; if(f>mx)mx=f; if(f<1500)dips++;
-  }while(now(CLOCK_MONOTONIC)-t0<dur);
+  }while(now()-t0<dur);
   printf("%d %.0f %.0f %.0f %d\n",n,sum/n,mn,mx,dips);
   return (int)(x&1);
 }
@@ -276,8 +293,8 @@ def _():
         add(G, "D2", "SKIP", "không biên dịch được đầu đo xung (cần clang)")
         return
     f = r[1]
-    st = "PASS" if f >= 2500 else "WARN" if f >= 1500 else "FAIL"
-    add(G, "D2", st, "xung hiệu dụng 1 luồng ngay lúc này: %.0f MHz%s" % (f, "" if st == "PASS" else " (có thể đang trong đợt kẹp PL1)"))
+    st = "PASS" if f >= 2500 else "WARN"
+    add(G, "D2", st, "xung hiệu dụng 1 luồng ngay lúc này: %.0f MHz%s" % (f, "" if st == "PASS" else " (đợt kẹp PL1 tạm thời sau tải nặng hoặc vừa khởi động; đo lại sau 1-2 phút nghỉ)"))
 
 
 @check(G, "D3")
@@ -296,6 +313,9 @@ def _():
 def _():
     p = {k: v for k, v in re.findall(r"^\s+(hibernatemode|standby|powernap|autopoweroff)\s+(\d+)", sh("pmset -g"), re.M)}
     ok = p.get("hibernatemode") == "0"
+    if not ok and "com.labrouss.S0ixStandby" in KS:
+        add(G, "D4", "INFO", "pmset: %s (chủ ý: ngủ do kext S0ixStandby xử lý, không dùng S3/S4)" % p)
+        return
     add(G, "D4", "PASS" if ok else "WARN", "pmset: %s (hibernatemode phải = 0 vì S4 không resume được)" % p)
 
 

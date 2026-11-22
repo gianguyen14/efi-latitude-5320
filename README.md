@@ -95,7 +95,7 @@ flowchart LR
 
 ### 2.9. Sleep bằng Deep Idle (`S0ixStandby.kext`)
 * Firmware của máy chỉ có Modern Standby (`SS3 = 0`), không có S3; S3 giả bằng `SSDT-S3` chỉ cho màn hình đen và hibernation S4 không resume được. Cấu hình hiện tại thay bằng Deep Idle: macOS ngủ ở S0, và `S0ixStandby.kext` (labrouss/S0ixStandby 0.5.4, BSD-3, dựng từ mã nguồn) gọi `_DSM` Modern Standby của firmware.
-* Gồm: `S0ixStandby.kext`, `SSDT-DEEPIDLE.aml`, `SSDT-PEPD-STA.aml` (cho `\_SB.PEPD` hiện ra với macOS) cùng bản vá OpenCore đổi tên `PEPD._STA` thành `XSTA`; `SSDT-S3.aml` được tắt; `Cpuid1Data` giả Ice Lake (`E5060700`); boot-args `-s0ixdbg -s0ixacnortc`. Mã nguồn SSDT ở `PostInstall/Tools/s0ix/`.
+* Gồm: `S0ixStandby.kext`, `SSDT-DEEPIDLE.aml`, `SSDT-PEPD-STA.aml` (cho `\_SB.PEPD` hiện ra với macOS) cùng bản vá OpenCore đổi tên `PEPD._STA` thành `XSTA`; `SSDT-S3.aml` được tắt; `Cpuid1Data` giả Ice Lake (`E5060700`); boot-args `-s0ixacnortc -s0ixd3` (`-s0ixd3` giảm công suất khi ngủ từ ~3,85 W xuống ~2,65 W, một lần đo mỗi bên). Mã nguồn SSDT ở `PostInstall/Tools/s0ix/`.
 * Kiểm tra: không có thành phần nào ở đây gây tụt xung. Cú kẹp ở mục 2.8 là giới hạn công suất, có trước khi bật Deep Idle và đo được nguyên như vậy trên cả hai cấu hình.
 * Chi tiết quá trình thử và các hạn chế đã ghi nhận lúc đó nằm trong `HANDOFF_CONTEXT.md` (mục S0ixStandby).
 

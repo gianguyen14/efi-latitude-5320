@@ -1405,7 +1405,7 @@
 				AAAAAAAAAAAAAAAAAAA=
 				</data>
 				<key>boot-args</key>
-				<string>-btlfxbeta amfi_get_out_of_my_way=0x1 -allow3d -disablegfxfirmware watchdog=0 debug=0x100 -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert -wexnoccs -wexnohwdecode</string>
+				<string>-btlfxbeta amfi_get_out_of_my_way=0x1 -allow3d -disablegfxfirmware watchdog=0 debug=0x100 -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert -wexnoccs -wexnohwdecode -s0ixd3</string>
 				<key>csr-active-config</key>
 				<data>
 				AwgAAA==

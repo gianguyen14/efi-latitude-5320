@@ -137,7 +137,7 @@ Toàn bộ hệ thống cổng USB được ánh xạ chuẩn xác qua `USBMap.k
 Dưới đây là bảng giải trình kỹ thuật cho chuỗi boot-args đang sử dụng trong EFI:
 
 ```text
--btlfxbeta amfi_get_out_of_my_way=0x1 -allow3d -disablegfxfirmware watchdog=0 debug=0x100 -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert -wexnoccs -wexnohwdecode
+-btlfxbeta amfi_get_out_of_my_way=0x1 -allow3d -disablegfxfirmware watchdog=0 debug=0x100 -vi2c-force-polling vsmchbkp=1 -wexteardownfix -wexnoposh -s0ixacnortc -btleadv -itlawdlcoexprobe -itlawdliface -itlawdlnativeup -itlawdlcoexrx -itlawdlcoextx -itlawdlcoexmulti -itlawdlcoexdata -itlawdlmitx -itlawdlelicit -itlawdlcaps -itlawdlsvcmerge -itlawdlawsync itlawdlintcoal=4 -itlawdlcoexbatx -itlawdlcoexpeerpause itlawdltxqueue=4096 -wexgvanoassert -wexnoccs -wexnohwdecode -s0ixd3
 ```
 
 Chuỗi trên là boot-args đang chạy (cập nhật 2026-11-21, macOS 26.7.1). Các cờ debug cũ (`keepsyms=1`, `msgbuf=1048576`, `-pc711pdbg`, `-s0ixdbg`) và `Misc/Debug/Target` (đã về 0) đã được gỡ. Bảng dưới đây chỉ ghi các cờ mà tài liệu này biết rõ mục đích; các cờ còn lại được ghi ở nhóm cuối.
@@ -155,6 +155,7 @@ Chuỗi trên là boot-args đang chạy (cập nhật 2026-11-21, macOS 26.7.1)
 | `-wexgvanoassert` | WhateverXe: bỏ assert của AppleGVACore gây sập WindowServer. |
 | `-wexnoccs` | WhateverXe: đặt `EnableMultiContext=0` trước khi accelerator khởi động, để `mediaanalysisd`/Vision không mở context compute trên engine CCS (nguyên nhân bão "Hung/Stuck ring: CCS"). |
 | `-wexnohwdecode` | WhateverXe: không quảng bá giải mã HEVC phần cứng, buộc iPhone gửi H.264 và giải mã bằng phần mềm (cần cho iPhone Mirroring). |
+| `-s0ixd3` | `S0ixStandby`: đưa các thiết bị PCI không có driver vào D3hot (~60 s sau khi kext nạp). Đo 22/11: ngủ 15 phút hao 2,65 W so với 3,85 W khi không có cờ; gói CPU PC10 59% thay vì PC3 99% (một lần đo mỗi bên, trên pin). |
 | `-s0ixacnortc`, `vsmchbkp=1` | Tham số của `S0ixStandby` / VirtualSMC (chưa ghi lại mục đích chi tiết). |
 | `-btleadv` | Tham số của `BTLEAdvFixup` (chưa ghi lại mục đích chi tiết). |
 | `-itlawdl*`, `itlawdlintcoal=4`, `itlawdltxqueue=4096` | Cờ tính năng AWDL (AirDrop) của `ForbiddenItlwm` (chưa ghi lại mục đích từng cờ). |

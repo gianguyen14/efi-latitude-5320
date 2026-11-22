@@ -88,6 +88,7 @@ flowchart LR
 ### 2.8. CPU bị kẹp xuống 360 MHz từng đợt (`SSDT-PL1`, đã bật sẵn)
 * Triệu chứng: dưới tải kéo dài, `powermetrics` báo `CPU LIMIT PL1`; xung tụt về khoảng 360 MHz trong 20–30 giây rồi hồi lại, lặp lại khoảng 90 giây một lần. Nhiệt lúc đó chỉ khoảng 50 °C, nên đây là giới hạn công suất PL1 của firmware (khoảng 12.5 W), không phải nhiệt.
 * Cách sửa: `EFI/OC/ACPI/SSDT-PL1.aml` (bản sao ở `PostInstall/Tools/pl1/SSDT-PL1.aml`) (mã nguồn `SSDT-PL1.dsl`) ghi PACKAGE_RAPL_LIMIT qua MCHBAR một lần lúc khởi động: PL1 = 18 W, PL2 = 28 W. Chỉ nâng, không bao giờ hạ, và bỏ qua nếu BIOS đã khóa thanh ghi (bit 63) hoặc vùng MMIO không hợp lệ. 18 W là mức Notebookcheck đo duy trì được trên cùng khung máy ở chế độ Ultra Performance của Windows.
+* **Nguyên nhân thật của chu kỳ ~35 s ở 18 W rồi ~22 s ở ~5,8 W / 400 MHz** là thanh ghi EC `0x32` (DPTF mode) bằng 0: firmware Dell chỉ gọi `DPST(1)` khi OS khai báo có driver Intel DTT (Windows có, macOS không). Khi đó nền tảng tự kẹp PL1 theo chu kỳ (MSR `0x64F` báo PL1 ở cả hai pha, không phải nhiệt). `EFI/OC/ACPI/SSDT-ECDPTF.aml` (mã nguồn `PostInstall/Tools/ecdptf/SSDT-ECDPTF.dsl`) gọi `DPST(1)` lúc khởi động, chỉ khi thanh ghi chưa bằng 1. Đo 200 s tải 8 luồng: giữ 18 W, ratio 32-34, không còn pha rớt.
 * Đã nằm trong `EFI/OC/ACPI/` và bật trong `ACPI > Add` của `config.plist`. Muốn tắt: đặt `Enabled` của `SSDT-PL1.aml` về `false`. Muốn đổi mức công suất: sửa `PL1W` / `PL2W` trong `SSDT-PL1.dsl` rồi biên dịch lại bằng `iasl`.
 * Kết quả đo trên máy này (5 phút dùng bình thường, cùng cấu hình, chỉ khác SSDT): thời gian bị kẹp dưới 1.5 GHz giảm từ 31% xuống 8%, công suất gói duy trì khoảng 18 W, nhiệt giữ ổn định khoảng 78 °C. Burst PL2 có thể chạm 100 °C trong khoảng 15 giây.
 * Hạn chế: vẫn còn thỉnh thoảng một đợt kẹp khoảng 20 giây ở khoảng 6 W / 50 °C với PL1 đang là 18 W, nên không phải do SSDT này; chưa rõ nguyên nhân (nghi giới hạn nền tảng của EC). Nhiệt và quạt cao hơn khi giữ 18 W.
@@ -111,7 +112,8 @@ EFI/
     │   ├── SSDT-EC-USBX-LAPTOP.aml          # Tạo thiết bị giả lập EC & cấp nguồn USB
     │   ├── SSDT-DEEPIDLE.aml                # Khai báo Deep Idle cho S0ixStandby
     │   ├── SSDT-PEPD-STA.aml                # Cho thiết bị PEPD (Modern Standby) hiện với macOS
-    │   └── SSDT-PL1.aml                     # Nâng PL1/PL2 của gói CPU lúc khởi động (mục 2.8)
+    │   ├── SSDT-PL1.aml                     # Nâng PL1/PL2 của gói CPU lúc khởi động (mục 2.8)
+    │   └── SSDT-ECDPTF.aml                  # Đặt DPTF mode của EC, hết kẹp PL1 theo chu kỳ (mục 2.8)
     ├── Drivers/
     │   ├── HfsPlus.efi                      # Driver đọc phân vùng macOS HFS+
     │   ├── OpenCanopy.efi                   # Giao diện đồ họa OpenCore (tùy chọn)

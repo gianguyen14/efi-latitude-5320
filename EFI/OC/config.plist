@@ -78,6 +78,14 @@
 				<key>Path</key>
 				<string>SSDT-PL1.aml</string>
 			</dict>
+			<dict>
+				<key>Comment</key>
+				<string>Tell the EC a DPTF client is present (SSDT-ECDPTF)</string>
+				<key>Enabled</key>
+				<true/>
+				<key>Path</key>
+				<string>SSDT-ECDPTF.aml</string>
+			</dict>
 		</array>
 		<key>Delete</key>
 		<array/>

@@ -192,7 +192,7 @@ for l in sh("kextstat -l").splitlines():
 
 @check(G, "C1")
 def _():
-    bad, dataonly, ok, verdiff = [], [], 0, []
+    bad, dataonly, ok, verdiff, gated = [], [], 0, [], []
     ids = set()
     for k in KADD:
         if not k["Enabled"]:
@@ -212,9 +212,12 @@ def _():
             mx = k.get("MaxKernel") or ""
             dv = os.uname().release
             if mx and tuple(int(x) for x in dv.split(".")[:2]) > tuple(int(x) for x in (mx.split(".") + ["0", "0"])[:2]):
-                name += " (MaxKernel %s < Darwin %s: config cố ý không nạp trên bản macOS này)" % (mx, dv)
+                gated.append("%s (MaxKernel %s < Darwin %s)" % (name, mx, dv))
+                continue
             bad.append(name)
     add(G, "C1", "PASS" if not bad else "FAIL", "%d/%d kext có file thực thi đã nạp%s" % (ok, ok + len(bad), "" if not bad else "; CHƯA nạp: " + ", ".join(bad)))
+    if gated:
+        add(G, "C1", "INFO", "kext cố ý không nạp vì MaxKernel thấp hơn macOS đang chạy (không phải lỗi): " + ", ".join(gated))
     add(G, "C1", "INFO", "kext chỉ chứa dữ liệu (không có trong kextstat là bình thường): " + ", ".join(dataonly))
     add(G, "C1", "PASS" if not verdiff else "WARN", "phiên bản kext đang chạy %s repo" % ("khớp" if not verdiff else "LỆCH " + "; ".join(verdiff)))
     vend = {".".join(i.split(".")[:2]) for i in ids if i}

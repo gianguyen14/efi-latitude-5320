@@ -44,7 +44,7 @@
 				<true/>
 				<key>port-count</key>
 				<data>
-				CgAAAA==
+				EAAAAA==
 				</data>
 				<key>ports</key>
 				<dict>
@@ -206,11 +206,11 @@
 					</dict>
 					<key>SS01</key>
 					<dict>
-						<key>#port</key>
+						<key>port</key>
 						<data>
 						DQAAAA==
 						</data>
-						<key>#usb-port-number</key>
+						<key>usb-port-number</key>
 						<data>
 						DQAAAA==
 						</data>
@@ -221,11 +221,11 @@
 					</dict>
 					<key>SS02</key>
 					<dict>
-						<key>#port</key>
+						<key>port</key>
 						<data>
 						DgAAAA==
 						</data>
-						<key>#usb-port-number</key>
+						<key>usb-port-number</key>
 						<data>
 						DgAAAA==
 						</data>
@@ -236,11 +236,11 @@
 					</dict>
 					<key>SS03</key>
 					<dict>
-						<key>#port</key>
+						<key>port</key>
 						<data>
 						DwAAAA==
 						</data>
-						<key>#usb-port-number</key>
+						<key>usb-port-number</key>
 						<data>
 						DwAAAA==
 						</data>
@@ -251,11 +251,11 @@
 					</dict>
 					<key>SS04</key>
 					<dict>
-						<key>#port</key>
+						<key>port</key>
 						<data>
 						EAAAAA==
 						</data>
-						<key>#usb-port-number</key>
+						<key>usb-port-number</key>
 						<data>
 						EAAAAA==
 						</data>

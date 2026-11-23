@@ -25,11 +25,13 @@ def main():
     b = bytes.fromhex(m.group(1))
     rev, mode, status, cb, ca, sb, rb, sa, ra, polls, dma, size = struct.unpack_from("<12I", b, 0)
     iova, = struct.unpack_from("<Q", b, 48)
+    irq = struct.unpack_from("<4I", b, 56) if len(b) >= 72 else (0, 0, 0, 0)
     print("mode %s, status %d: %s" % ({1: "dry run", 2: "real run"}.get(mode, mode), status, STATUS.get(status, "?")))
     print("PCI command: before 0x%04x after 0x%04x" % (cb, ca))
     print("exec stage: before 0x%08x (%s)  after 0x%08x (%s)" % (sb, STAGE.get(sb, "?"), sa, STAGE.get(sa, "?")))
     print("ROM exit code: before 0x%x after 0x%x (0x01/0x10 = accepted, 0xff = failed), polls %d" % (rb, ra, polls))
     print("DMA: status %d, device address 0x%x, size %d" % (dma, iova, size))
+    print("MSI: source index %s (0xffffffff = none), setup rc %s (0 ok, 1 no MSI source, 2 workloop, 3 event source, 4 add failed), interrupts counted %d, interrupt sources seen (bitmask) 0x%x" % (hex(irq[0]), irq[1], irq[2], irq[3]))
     return 0
 
 
